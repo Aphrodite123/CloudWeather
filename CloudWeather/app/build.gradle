@@ -1,4 +1,7 @@
 apply plugin: 'com.android.application'
+apply plugin: 'org.greenrobot.greendao'
+/*Apply the realm-android plugin to the top of the application level build.gradle file.*/
+apply plugin: 'realm-android'
 
 android {
     compileSdkVersion 27
@@ -16,6 +19,14 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    /**
+     * 针对greenDao的一些配置
+     */
+    greendao {
+        schemaVersion 1 //数据库版本号
+        daoPackage 'com.usher.greendao.greendao.gen' //自动生成的工具类的包名
+        targetGenDir 'src/main/java' //路径
+    }
 }
 
 dependencies {
@@ -25,4 +36,21 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    /**
+     * 日志管理框架
+     */
+    implementation files('libs/Log.jar')
+    /**
+     * 注解框架
+     */
+    implementation 'com.jakewharton:butterknife:8.8.1'
+    /**
+     * greenDao框架
+     */
+    implementation 'org.greenrobot:greendao:3.2.2'
+
+    /**
+     * Okhttp3
+     */
+    implementation 'com.squareup.okhttp3:okhttp:3.4.1'
 }
