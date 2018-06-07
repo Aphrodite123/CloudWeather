@@ -15,7 +15,7 @@ import com.aphrodite.cloudweather.database.entity.CityEntity;
 /** 
  * DAO for table "CITY_ENTITY".
 */
-public class CityEntityDao extends AbstractDao<CityEntity, Long> {
+public class CityEntityDao extends AbstractDao<CityEntity, Void> {
 
     public static final String TABLENAME = "CITY_ENTITY";
 
@@ -24,11 +24,10 @@ public class CityEntityDao extends AbstractDao<CityEntity, Long> {
      * Can be used for QueryBuilder and for referencing column names.
      */
     public static class Properties {
-        public final static Property Id = new Property(0, long.class, "id", true, "_id");
-        public final static Property Cityid = new Property(1, String.class, "cityid", false, "city_id");
-        public final static Property Parentid = new Property(2, String.class, "parentid", false, "parent_id");
-        public final static Property Citycode = new Property(3, String.class, "citycode", false, "city_code");
-        public final static Property City = new Property(4, String.class, "city", false, "city");
+        public final static Property Cityid = new Property(0, String.class, "cityid", false, "city_id");
+        public final static Property Parentid = new Property(1, String.class, "parentid", false, "parent_id");
+        public final static Property Citycode = new Property(2, String.class, "citycode", false, "city_code");
+        public final static Property City = new Property(3, String.class, "city", false, "city");
     }
 
 
@@ -44,11 +43,10 @@ public class CityEntityDao extends AbstractDao<CityEntity, Long> {
     public static void createTable(Database db, boolean ifNotExists) {
         String constraint = ifNotExists? "IF NOT EXISTS ": "";
         db.execSQL("CREATE TABLE " + constraint + "\"CITY_ENTITY\" (" + //
-                "\"_id\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL ," + // 0: id
-                "\"city_id\" TEXT," + // 1: cityid
-                "\"parent_id\" TEXT," + // 2: parentid
-                "\"city_code\" TEXT," + // 3: citycode
-                "\"city\" TEXT);"); // 4: city
+                "\"city_id\" TEXT," + // 0: cityid
+                "\"parent_id\" TEXT," + // 1: parentid
+                "\"city_code\" TEXT," + // 2: citycode
+                "\"city\" TEXT);"); // 3: city
     }
 
     /** Drops the underlying database table. */
@@ -60,99 +58,92 @@ public class CityEntityDao extends AbstractDao<CityEntity, Long> {
     @Override
     protected final void bindValues(DatabaseStatement stmt, CityEntity entity) {
         stmt.clearBindings();
-        stmt.bindLong(1, entity.getId());
  
         String cityid = entity.getCityid();
         if (cityid != null) {
-            stmt.bindString(2, cityid);
+            stmt.bindString(1, cityid);
         }
  
         String parentid = entity.getParentid();
         if (parentid != null) {
-            stmt.bindString(3, parentid);
+            stmt.bindString(2, parentid);
         }
  
         String citycode = entity.getCitycode();
         if (citycode != null) {
-            stmt.bindString(4, citycode);
+            stmt.bindString(3, citycode);
         }
  
         String city = entity.getCity();
         if (city != null) {
-            stmt.bindString(5, city);
+            stmt.bindString(4, city);
         }
     }
 
     @Override
     protected final void bindValues(SQLiteStatement stmt, CityEntity entity) {
         stmt.clearBindings();
-        stmt.bindLong(1, entity.getId());
  
         String cityid = entity.getCityid();
         if (cityid != null) {
-            stmt.bindString(2, cityid);
+            stmt.bindString(1, cityid);
         }
  
         String parentid = entity.getParentid();
         if (parentid != null) {
-            stmt.bindString(3, parentid);
+            stmt.bindString(2, parentid);
         }
  
         String citycode = entity.getCitycode();
         if (citycode != null) {
-            stmt.bindString(4, citycode);
+            stmt.bindString(3, citycode);
         }
  
         String city = entity.getCity();
         if (city != null) {
-            stmt.bindString(5, city);
+            stmt.bindString(4, city);
         }
     }
 
     @Override
-    public Long readKey(Cursor cursor, int offset) {
-        return cursor.getLong(offset + 0);
+    public Void readKey(Cursor cursor, int offset) {
+        return null;
     }    
 
     @Override
     public CityEntity readEntity(Cursor cursor, int offset) {
         CityEntity entity = new CityEntity( //
-            cursor.getLong(offset + 0), // id
-            cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1), // cityid
-            cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2), // parentid
-            cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3), // citycode
-            cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4) // city
+            cursor.isNull(offset + 0) ? null : cursor.getString(offset + 0), // cityid
+            cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1), // parentid
+            cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2), // citycode
+            cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3) // city
         );
         return entity;
     }
      
     @Override
     public void readEntity(Cursor cursor, CityEntity entity, int offset) {
-        entity.setId(cursor.getLong(offset + 0));
-        entity.setCityid(cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1));
-        entity.setParentid(cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2));
-        entity.setCitycode(cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3));
-        entity.setCity(cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4));
+        entity.setCityid(cursor.isNull(offset + 0) ? null : cursor.getString(offset + 0));
+        entity.setParentid(cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1));
+        entity.setCitycode(cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2));
+        entity.setCity(cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3));
      }
     
     @Override
-    protected final Long updateKeyAfterInsert(CityEntity entity, long rowId) {
-        entity.setId(rowId);
-        return rowId;
+    protected final Void updateKeyAfterInsert(CityEntity entity, long rowId) {
+        // Unsupported or missing PK type
+        return null;
     }
     
     @Override
-    public Long getKey(CityEntity entity) {
-        if(entity != null) {
-            return entity.getId();
-        } else {
-            return null;
-        }
+    public Void getKey(CityEntity entity) {
+        return null;
     }
 
     @Override
     public boolean hasKey(CityEntity entity) {
-        throw new UnsupportedOperationException("Unsupported for entities with a non-null key");
+        // TODO
+        return false;
     }
 
     @Override

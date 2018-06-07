@@ -1,5 +1,7 @@
 package com.aphrodite.cloudweather.http;
 
+import android.text.TextUtils;
+
 import com.aphrodite.cloudweather.utils.ObjectUtils;
 
 import org.apache.commons.lang3.StringUtils;
@@ -100,17 +102,36 @@ public class OkHttpUtils {
 
     public void doGet(String url, Map<String, String> headers, Callback callback) {
         Request.Builder builder = new Request.Builder();
+
+        if (TextUtils.isEmpty(url)) {
+            return;
+        }
         builder.url(url);
-        builder.headers(getHeaders(headers));
+
+        if (!ObjectUtils.isEmpty(headers)) {
+            builder.headers(getHeaders(headers));
+        }
+
         Request request = builder.build();
         mOkHttpClient.newCall(request).enqueue(callback);
     }
 
     public void doPost(String url, Map<String, String> headers, Map<String, String> params, Callback callback) {
         Request.Builder builder = new Request.Builder();
+
+        if (TextUtils.isEmpty(url)) {
+            return;
+        }
         builder.url(url);
-        builder.headers(getHeaders(headers));
-        builder.post(getRequestBody(params));
+
+        if (!ObjectUtils.isEmpty(headers)) {
+            builder.headers(getHeaders(headers));
+        }
+
+        if (!ObjectUtils.isEmpty(params)) {
+            builder.post(getRequestBody(params));
+        }
+
         Request request = builder.build();
         mOkHttpClient.newCall(request).enqueue(callback);
     }

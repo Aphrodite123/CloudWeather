@@ -33,25 +33,11 @@ public class CloudWeatherApplication extends Application {
 
         Logger.init(this);
 
-        /*测试Realm的应用，暂时注掉GreenDao，时间：2017/11/26*/
-//    initGreenDao();
-
-        initRealm();
+        initGreenDao();
     }
 
     private void initGreenDao() {
         this.mDaoManager = GreenDaoManager.getInstance(this);
-    }
-
-    private void initRealm() {
-        Realm.init(this);
-        RealmConfiguration configuration = new RealmConfiguration.Builder()
-                .name(BaseConfig.NAME_REALM)
-                .schemaVersion(BaseConfig.DB_VERSION)
-                .migration(new RealmMigrationHelper())
-                .deleteRealmIfMigrationNeeded()
-                .build();
-        Realm.setDefaultConfiguration(configuration);
     }
 
     public static CloudWeatherApplication getApp() {
@@ -76,4 +62,5 @@ public class CloudWeatherApplication extends Application {
         String runningActivity = activityManager.getRunningTasks(1).get(0).topActivity.getClassName();
         return runningActivity;
     }
+
 }

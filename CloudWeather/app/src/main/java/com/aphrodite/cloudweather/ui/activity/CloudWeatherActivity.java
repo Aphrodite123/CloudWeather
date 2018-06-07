@@ -1,95 +1,87 @@
 package com.aphrodite.cloudweather.ui.activity;
 
-import android.support.v7.app.AppCompatActivity;
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.location.Address;
+import android.os.Build;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.os.Bundle;
-import android.util.Log;
-import android.widget.TextView;
 
 import com.aphrodite.cloudweather.R;
-import com.aphrodite.cloudweather.config.HttpConfig;
-import com.aphrodite.cloudweather.http.OkHttpUtils;
+import com.aphrodite.cloudweather.presenter.LocationImpl;
+import com.aphrodite.cloudweather.ui.base.BaseActivity;
 import com.aphrodite.cloudweather.utils.Logger;
+import com.aphrodite.cloudweather.view.inter.ILocation;
 
-import org.apache.commons.lang3.StringUtils;
+import java.util.List;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.HashMap;
-import java.util.Map;
-
-import butterknife.BindView;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-
-import static com.aphrodite.cloudweather.config.HttpConfig.ALIYUN_HOST;
-import static com.aphrodite.cloudweather.config.HttpConfig.APP_CODE;
-import static com.aphrodite.cloudweather.config.HttpConfig.RequestParameters.CITY_ID_KEY;
-
-public class CloudWeatherActivity extends AppCompatActivity {
+public class CloudWeatherActivity extends BaseActivity {
     private static final String TAG = CloudWeatherActivity.class.getSimpleName();
+
+    private final static int REQUEST_PERMISSION = 0x121;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_cloud_weather);
-        queryWeather("219");
-        queryCities();
-    }
-
-    /**
-     * 根据cityID查询天气情况
-     *
-     * @param cityId
-     */
-    private void queryWeather(String cityId) {
-        Map<String, String> header = new HashMap<String, String>();
-        header.put(HttpConfig.Header.AUTHORIZATION_KEY, "APPCODE " + APP_CODE);
-
-        Map<String, String> querys = new HashMap<String, String>();
-        querys.put(CITY_ID_KEY, cityId);
-        try {
-            String url = OkHttpUtils.getInstance().buildUrl(ALIYUN_HOST, HttpConfig.QueryWeather.PATH, querys);
-            OkHttpUtils.getInstance().doGet(url, header, new Callback() {
-                @Override
-                public void onFailure(Call call, IOException e) {
-
-                }
-
-                @Override
-                public void onResponse(Call call, Response response) throws IOException {
-                    Log.d(TAG, "Enter queryWeather method." + response.body().string());
-                }
-            });
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+        if (!hasPermission()) {
+            requestPermission();
+        } else {
+            queryLocation();
         }
     }
 
-    /**
-     * 查询城市
-     */
-    private void queryCities() {
-        Map<String, String> header = new HashMap<String, String>();
-        header.put(HttpConfig.Header.AUTHORIZATION_KEY, "APPCODE " + APP_CODE);
-        try {
-            String url = OkHttpUtils.getInstance().buildUrl(ALIYUN_HOST, HttpConfig.QueryCities.PATH, null);
-            OkHttpUtils.getInstance().doGet(url, header, new Callback() {
-                @Override
-                public void onFailure(Call call, IOException e) {
+    @Override
+    protected int getViewId() {
+        return R.layout.activity_cloud_weather;
+    }
 
-                }
+    private void queryLocation() {
+        LocationImpl location = new LocationImpl(new ILocation() {
+            @Override
+            public void onLocationFailed() {
 
-                @Override
-                public void onResponse(Call call, Response response) throws IOException {
-                    Log.d(TAG, "Enter queryCities method." + response.body().string());
+            }
+
+            @Override
+            public void onLocationSuccess(List<Address> addresses) {
+                Logger.i(TAG, "Enter location method." + addresses);
+            }
+        });
+        location.startLocation();
+    }
+
+    @Override
+    protected boolean hasPermission() {
+        return Build.VERSION.SDK_INT < 23
+                || ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    @Override
+    protected void requestPermission() {
+        if (Build.VERSION.SDK_INT < 23) {
+            return;
+        }
+        String[] permissions = new String[]{
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+        };
+        ActivityCompat.requestPermissions(this, permissions, REQUEST_PERMISSION);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_PERMISSION:
+                if (grantResults.length > 1
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                        && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+                    queryLocation();
+                } else {
+                    Logger.i(TAG, "Enter onRequestPermissionsResult method. Request permission failed!");
                 }
-            });
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
         }
     }
 

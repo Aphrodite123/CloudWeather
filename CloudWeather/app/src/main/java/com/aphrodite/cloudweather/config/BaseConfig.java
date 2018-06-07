@@ -14,17 +14,12 @@ public class BaseConfig {
     public static final String PACKAGE_NAME = "com.aphrodite.cloudweather";
 
     public static final String SDCARD_PATH = Environment.getExternalStorageDirectory().getPath() + File.separator;
-    public static final String ROOT_PATH = SDCARD_PATH + "manager" + File.separator;
+    public static final String ROOT_PATH = SDCARD_PATH + "cloudweather" + File.separator;
 
     /**
      * 数据库名称
      */
-    public static final String NAME_DATABASE = "manager.db";
-
-    /**
-     * Realm名称
-     */
-    public static final String NAME_REALM = "manager.realm";
+    public static final String NAME_DATABASE = "cloud_weather.db";
 
     /**
      * 数据库版本号

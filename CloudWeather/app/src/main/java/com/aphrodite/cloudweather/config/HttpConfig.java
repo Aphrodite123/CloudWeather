@@ -13,6 +13,16 @@ public class HttpConfig extends BaseConfig {
     public static final String ALIYUN_HOST = "http://jisutqybmf.market.alicloudapi.com";
 
     /**
+     * 百度地图key
+     */
+    public static final String BAIDU_APP_KEY = "uyZiuzQCPmcT6dpOlQs3xQBbn0MjTcbz";
+
+    /**
+     * 百度地图Host
+     */
+    public static final String BAIDU_MAP_HOST = "http://api.map.baidu.com/geocoder";
+
+    /**
      * 天气预报查询接口
      */
     public interface QueryWeather {
@@ -38,6 +48,7 @@ public class HttpConfig extends BaseConfig {
      * location	STRING	可选	经纬度 纬度在前，,分割 如：39.983424,116.322987
      */
     public interface RequestParameters {
+        String APP_CODE_KEY = "APPCODE ";
         String CITY_KEY = "city";
         String CITY_CODE_KEY = "citycode";
         String CITY_ID_KEY = "cityid";
