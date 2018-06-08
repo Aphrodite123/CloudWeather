@@ -13,6 +13,7 @@ import com.aphrodite.cloudweather.R;
 import com.aphrodite.cloudweather.presenter.LocationImpl;
 import com.aphrodite.cloudweather.ui.base.BaseActivity;
 import com.aphrodite.cloudweather.utils.Logger;
+import com.aphrodite.cloudweather.utils.PinyinUtils;
 import com.aphrodite.cloudweather.view.inter.ILocation;
 
 import java.util.List;
