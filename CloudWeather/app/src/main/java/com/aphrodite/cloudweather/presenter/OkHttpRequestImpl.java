@@ -11,10 +11,14 @@ import com.aphrodite.cloudweather.utils.ObjectUtils;
 import com.aphrodite.cloudweather.view.inter.IQueryWeather;
 import com.google.gson.Gson;
 import com.usher.greendao.greendao.gen.CityEntityDao;
+import com.usher.greendao.greendao.gen.DaoSession;
+
+import org.greenrobot.greendao.query.QueryBuilder;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import okhttp3.Call;
@@ -66,24 +70,37 @@ public class OkHttpRequestImpl {
                 }
 
                 @Override
-                public void onResponse(Call call, Response response) throws IOException {
+                public void onResponse(Call call, final Response response) throws IOException {
                     Gson gson = new Gson();
-                    QueryCitiesResponse citiesResponse = gson.fromJson(response.body().string(), QueryCitiesResponse.class);
+                    final QueryCitiesResponse citiesResponse = gson.fromJson(response.body().string(), QueryCitiesResponse.class);
                     if (null != citiesResponse) {
-                        CityEntityDao cityEntityDao = CloudWeatherApplication.getDaoManager().getDaoSession().getCityEntityDao();
-                        for (CityBean city : citiesResponse.getResult()) {
-                            if (null == city) {
-                                continue;
-                            }
-
-                            CityEntity cityEntity = new CityEntity();
-                            cityEntity.setCityid(city.getCityid());
-                            cityEntity.setParentid(city.getParentid());
-                            cityEntity.setCitycode(city.getCitycode());
-                            cityEntity.setCity(city.getCity());
-
-                            cityEntityDao.insert(cityEntity);
+                        DaoSession daoSession = CloudWeatherApplication.getDaoManager().getDaoSession();
+                        if (null == daoSession) {
+                            return;
                         }
+
+                        final CityEntityDao cityEntityDao = daoSession.getCityEntityDao();
+                        daoSession.runInTx(new Runnable() {
+                            @Override
+                            public void run() {
+                                for (CityBean city : citiesResponse.getResult()) {
+                                    if (null == city) {
+                                        continue;
+                                    }
+
+                                    CityEntity cityEntity = new CityEntity();
+                                    cityEntity.setCityid(city.getCityid());
+                                    cityEntity.setParentid(city.getParentid());
+                                    cityEntity.setCitycode(city.getCitycode());
+                                    cityEntity.setCity(city.getCity());
+
+                                    cityEntityDao.insertOrReplace(cityEntity);
+                                }
+                                if (null != queryWeather) {
+                                    queryWeather.onSuccess(response);
+                                }
+                            }
+                        });
                     }
                     if (null != queryWeather) {
                         queryWeather.onSuccess(response);

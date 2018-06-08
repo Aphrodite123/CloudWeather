@@ -69,6 +69,8 @@ public abstract class BaseActivity extends FragmentActivity {
         mActivityManager.addActivity(this);
         super.onCreate(savedInstanceState);
         setContentView(getViewId());
+        initView();
+        initData();
         /**
          * 绑定Activity(注:必须在setContentView之后)
          */
@@ -81,6 +83,10 @@ public abstract class BaseActivity extends FragmentActivity {
      * @return
      */
     protected abstract int getViewId();
+
+    protected abstract void initView();
+
+    protected abstract void initData();
 
     @Override
     protected void onDestroy() {

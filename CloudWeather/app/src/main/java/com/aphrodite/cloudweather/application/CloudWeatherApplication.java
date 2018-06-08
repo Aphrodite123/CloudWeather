@@ -63,4 +63,8 @@ public class CloudWeatherApplication extends Application {
         return runningActivity;
     }
 
+    public void exitApp() {
+        mDaoManager.closeDataBase();
+    }
+
 }

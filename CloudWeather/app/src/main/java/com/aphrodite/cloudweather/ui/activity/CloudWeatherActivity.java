@@ -10,13 +10,22 @@ import android.support.v4.content.ContextCompat;
 import android.os.Bundle;
 
 import com.aphrodite.cloudweather.R;
+import com.aphrodite.cloudweather.application.CloudWeatherApplication;
+import com.aphrodite.cloudweather.database.entity.CityEntity;
 import com.aphrodite.cloudweather.presenter.LocationImpl;
+import com.aphrodite.cloudweather.presenter.OkHttpRequestImpl;
 import com.aphrodite.cloudweather.ui.base.BaseActivity;
 import com.aphrodite.cloudweather.utils.Logger;
-import com.aphrodite.cloudweather.utils.PinyinUtils;
 import com.aphrodite.cloudweather.view.inter.ILocation;
+import com.aphrodite.cloudweather.view.inter.IQueryWeather;
+import com.usher.greendao.greendao.gen.CityEntityDao;
+import com.usher.greendao.greendao.gen.DaoSession;
+
+import org.greenrobot.greendao.query.QueryBuilder;
 
 import java.util.List;
+
+import okhttp3.Response;
 
 public class CloudWeatherActivity extends BaseActivity {
     private static final String TAG = CloudWeatherActivity.class.getSimpleName();
@@ -26,16 +35,44 @@ public class CloudWeatherActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (!hasPermission()) {
-            requestPermission();
-        } else {
-            queryLocation();
-        }
     }
 
     @Override
     protected int getViewId() {
         return R.layout.activity_cloud_weather;
+    }
+
+    @Override
+    protected void initView() {
+
+    }
+
+    @Override
+    protected void initData() {
+        OkHttpRequestImpl.getInstance().queryCities(new IQueryWeather() {
+            @Override
+            public void onFailed() {
+
+            }
+
+            @Override
+            public void onSuccess(Response response) {
+                DaoSession daoSession = CloudWeatherApplication.getDaoManager().getDaoSession();
+                if (null == daoSession) {
+                    return;
+                }
+                CityEntityDao cityEntityDao = daoSession.getCityEntityDao();
+                QueryBuilder builder = cityEntityDao.queryBuilder();
+                builder.where(CityEntityDao.Properties.Parentid.eq(0));
+                List<CityEntity> entities = builder.list();
+            }
+        });
+
+        if (!hasPermission()) {
+            requestPermission();
+        } else {
+            queryLocation();
+        }
     }
 
     private void queryLocation() {
