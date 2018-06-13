@@ -5,18 +5,28 @@ apply plugin: 'realm-android'
 
 android {
     compileSdkVersion 27
+    buildToolsVersion '27.0.3'
     defaultConfig {
         applicationId "com.aphrodite.cloudweather"
         minSdkVersion 16
         targetSdkVersion 27
         versionCode 1
-        versionName "1.weather_icon_0"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        versionName "1.0.1"
+        multiDexEnabled true
     }
+
     buildTypes {
+        debug {
+            minifyEnabled false //true开启混淆配置，false关闭
+            //是否输出日志
+            buildConfigField 'boolean', 'IS_DEBUG', 'true'
+        }
+
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            //是否输出日志
+            buildConfigField 'boolean', 'IS_DEBUG', 'false'
         }
     }
     /**
@@ -27,12 +37,14 @@ android {
         daoPackage 'com.usher.greendao.greendao.gen' //自动生成的工具类的包名
         targetGenDir 'src/main/java' //路径
     }
+    productFlavors {
+    }
 }
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'com.android.support:design:27.1.1'
     implementation 'com.android.support:appcompat-v7:27.1.1'
-    testImplementation 'junit:junit:4.12'
     /**
      * 日志管理框架
      */
@@ -41,6 +53,7 @@ dependencies {
      * 注解框架
      */
     implementation 'com.jakewharton:butterknife:8.8.1'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
     /**
      * greenDao框架
      */
@@ -57,4 +70,12 @@ dependencies {
      * 汉字转拼音
      */
     implementation 'com.belerweb:pinyin4j:2.5.1'
+    /**
+     * ViewPagerIndicator
+     */
+    implementation 'com.github.JakeWharton:ViewPagerIndicator:2.4.1'
+    /**
+     * 友盟统计
+     */
+    implementation 'com.umeng.analytics:analytics:6.1.4'
 }
