@@ -78,4 +78,8 @@ dependencies {
      * 友盟统计
      */
     implementation 'com.umeng.analytics:analytics:6.1.4'
+    /**
+     * RecyclerView
+     */
+    implementation 'com.android.support:recyclerview-v7:27.1.1'
 }

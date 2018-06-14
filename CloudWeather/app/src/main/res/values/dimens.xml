@@ -10,6 +10,7 @@
     <dimen name="dp_48">48dp</dimen>
 
     <!--字体大小-->
-    <dimen name="sp_16">8sp</dimen>
+    <dimen name="sp_8">8sp</dimen>
+    <dimen name="sp_60">60sp</dimen>
 
 </resources>

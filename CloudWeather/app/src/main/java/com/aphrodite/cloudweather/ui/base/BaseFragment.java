@@ -14,6 +14,9 @@ import com.aphrodite.cloudweather.utils.Logger;
 import com.aphrodite.cloudweather.utils.UIUtils;
 import com.umeng.analytics.MobclickAgent;
 
+import butterknife.ButterKnife;
+import butterknife.Unbinder;
+
 /**
  * Created by Aphrodite on 2016/10/7.
  */
@@ -21,12 +24,30 @@ import com.umeng.analytics.MobclickAgent;
 public abstract class BaseFragment extends Fragment {
     private static final String TAG = BaseFragment.class.getSimpleName();
     private boolean onShow = false;
+    private Unbinder mUnbinder;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(getViewId(), container, false);
+        mUnbinder = ButterKnife.bind(this, view);
         return view;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        initView();
+        initData();
+        initListener();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (null != mUnbinder) {
+            mUnbinder.unbind();
+        }
     }
 
     /**
