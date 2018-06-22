@@ -16,12 +16,14 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 
 import com.aphrodite.cloudweather.R;
 import com.aphrodite.cloudweather.utils.DisplayUtils;
+import com.aphrodite.cloudweather.utils.Logger;
 
 /**
  * 圆形进度条
  * Created by Aphrodite on 2018/6/14.
  */
 public class CircleProgressBar extends View {
+    private static final String TAG = CircleProgressBar.class.getSimpleName();
     private Context mContext;
 
     // 刻度画笔
@@ -58,6 +60,19 @@ public class CircleProgressBar extends View {
     private int textColor;
 
     private ValueAnimator animator;
+
+    //最低温度
+    private int minTemp;
+    //最高温度
+    private int maxTemp;
+    //圆弧起始位置角度，默认120°
+    private final int START_ANGLE = 120;
+    //圆弧总角度，默认300°
+    private final int TOTAL_ANGLE = 300;
+    //0℃位置角度，默认230°
+    private final int ZERO_ANGLE = 230;
+    //总刻度数目
+    private final int DIVIDE_NUMBER = 100;
 
     public CircleProgressBar(Context context) {
         super(context);
@@ -131,18 +146,30 @@ public class CircleProgressBar extends View {
      */
     private void drawArcScale(Canvas canvas) {
         canvas.save();
+        float angle = (float) TOTAL_ANGLE / DIVIDE_NUMBER;
+        canvas.rotate(-270 + START_ANGLE, mWidth / 2, mHeight / 2);
 
-        for (int i = 0; i < 100; i++) {
-            if (progress > i) {
+        int startIndex = getStartIndex(minTemp, maxTemp);
+        int endIndex = getEndIndex(minTemp, maxTemp);
+        Logger.i(TAG, "Enter drawArcScale method.(" + startIndex + "," + endIndex + ")");
+
+        for (int i = 0; i <= DIVIDE_NUMBER; i++) {
+            if (0 == i || DIVIDE_NUMBER == i) {
+                mScalePaint.setStrokeWidth(1);
+                mScalePaint.setColor(Color.WHITE);
+                canvas.drawLine(mWidth / 2, -DisplayUtils.dip2px(mContext, 4), mWidth / 2, DisplayUtils.dip2px(mContext, 18), mScalePaint);
+            } else if (i > startIndex && i <= endIndex) {
+                mScalePaint.setStrokeWidth(3);
                 mScalePaint.setColor(indexColor);
+                canvas.drawLine(mWidth / 2, 0, mWidth / 2, DisplayUtils.dip2px(mContext, 18), mScalePaint);
             } else {
+                mScalePaint.setStrokeWidth(2);
                 mScalePaint.setColor(baseColor);
+                canvas.drawLine(mWidth / 2, 0, mWidth / 2, DisplayUtils.dip2px(mContext, 18), mScalePaint);
             }
-            canvas.drawLine(mWidth / 2, 0, mHeight / 2, DisplayUtils.dip2px(mContext, 18), mScalePaint);
-            // 旋转的度数 = 100 / 360
-            canvas.rotate(3.6f, mWidth / 2, mHeight / 2);
+            // 旋转的度数
+            canvas.rotate(angle, mWidth / 2, mHeight / 2);
         }
-
         canvas.restore();
     }
 
@@ -232,5 +259,150 @@ public class CircleProgressBar extends View {
 
         // 设置该view的宽高
         setMeasuredDimension(mWidth, mHeight);
+    }
+
+    /**
+     * 根据温度范围获取起始位置索引
+     *
+     * @param minTemp
+     * @param maxTemp
+     * @return
+     */
+    private int getStartIndex(int minTemp, int maxTemp) {
+        int index = Math.abs((getStartAngle(minTemp, maxTemp) - START_ANGLE)) * DIVIDE_NUMBER / TOTAL_ANGLE;
+        return index;
+    }
+
+    /**
+     * 根据温度范围获取结束位置索引
+     *
+     * @param minTemp
+     * @param maxTemp
+     * @return
+     */
+    private int getEndIndex(int minTemp, int maxTemp) {
+        int index = (getStartAngle(minTemp, maxTemp) + 150) * DIVIDE_NUMBER / TOTAL_ANGLE;
+        return index;
+    }
+
+    /**
+     * 获取最低温度点角度
+     *
+     * @param startTemp
+     * @param endTemp
+     * @return
+     */
+    private int getStartAngle(int startTemp, int endTemp) {
+        //零下温度所占总的角度数，默认 230-120 = 110
+        int subzeroAngle = ZERO_ANGLE - START_ANGLE;
+        //温度大于0℃时总角度，默认 300- （230-120）= 190
+        int noSubzeroAngle = TOTAL_ANGLE - subzeroAngle;
+
+        int angle = 0;
+
+        int tempPoor = endTemp - startTemp;
+        if (tempPoor < 0) {
+            return angle;
+        }
+
+        int scope = 0;
+        int scale = Math.abs(startTemp) / tempPoor;
+        if (1 == scale) {
+            scope = tempPoor;
+        } else if (scale > 1) {
+            scale = scale - 1;
+            scope = tempPoor * scale;
+        }
+
+        //最低&最高温度大于0℃
+        if (startTemp >= 0 && endTemp >= 0) {
+            angle = ZERO_ANGLE + noSubzeroAngle * (endTemp - scope) * startTemp / endTemp;
+        } else if (startTemp < 0 && endTemp >= 0) {
+            //最低小于0℃&最高温度大于0℃
+//            angle = ZERO_ANGLE - subzeroAngle *
+        } else if (startTemp < 0 && endTemp < 0) {
+            //最低小于0℃&最高温度小于0℃
+        }
+        return angle;
+    }
+
+    /**
+     * 获取最低温度到最高温度范围大小
+     *
+     * @param lowestTemp
+     * @param highestTemp
+     * @return
+     */
+    private int getScopeAngle(int lowestTemp, int highestTemp) {
+        int angle = 0;
+
+        int tempPoor = highestTemp - lowestTemp;
+        if (tempPoor <= 0) {
+            return angle;
+        }
+
+        //最低&最高温度大于0℃
+        if (lowestTemp >= 0 && highestTemp >= 0) {
+            angle = getOffsetAngle(lowestTemp, highestTemp, false);
+        } else if (lowestTemp < 0 && highestTemp >= 0) {
+            //最低小于0℃&最高温度大于0℃
+            angle = getOffsetAngle(lowestTemp, 0, true) + getOffsetAngle(0, highestTemp, false);
+        } else if (lowestTemp < 0 && highestTemp < 0) {
+            //最低小于0℃&最高温度小于0℃
+            angle = getOffsetAngle(lowestTemp, highestTemp, true);
+        }
+        return angle;
+    }
+
+    /**
+     * 获取偏移角度
+     *
+     * @param isSubzero
+     * @return
+     */
+    private int getOffsetAngle(int startTemp, int endTemp, boolean isSubzero) {
+        int offsetAngle = 0;
+        //零下温度所占总的角度数，默认 230-120 = 110
+        int subzeroAngle = ZERO_ANGLE - START_ANGLE;
+        //温度大于0℃时总角度，默认 300- （230-120）= 190
+        int noSubzeroAngle = TOTAL_ANGLE - subzeroAngle;
+
+        int tempPoor = endTemp - startTemp;
+        if (tempPoor < 0) {
+            return offsetAngle;
+        }
+
+        int scope = 0;
+        int scale = Math.abs(startTemp) / tempPoor;
+        if (1 == scale) {
+            scope = tempPoor;
+        } else if (scale > 1) {
+            scale = scale - 1;
+            scope = tempPoor * scale;
+        }
+
+        if (isSubzero) {
+            offsetAngle = subzeroAngle * scope / endTemp;
+        } else {
+            offsetAngle = noSubzeroAngle * scope / endTemp;
+        }
+        return offsetAngle;
+    }
+
+
+    public int getMinTemp() {
+        return minTemp;
+    }
+
+    public void setMinTemp(int minTemp) {
+        this.minTemp = minTemp;
+    }
+
+    public int getMaxTemp() {
+        return maxTemp;
+    }
+
+    public void setMaxTemp(int maxTemp) {
+        this.maxTemp = maxTemp;
     }
 }

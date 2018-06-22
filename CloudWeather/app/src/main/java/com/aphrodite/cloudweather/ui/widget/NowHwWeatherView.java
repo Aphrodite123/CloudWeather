@@ -15,11 +15,13 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 
 import com.aphrodite.cloudweather.R;
 import com.aphrodite.cloudweather.utils.DisplayUtils;
+import com.aphrodite.cloudweather.utils.Logger;
 
 /**
  * Created by Aphrodite on 2018/6/14.
  */
 public class NowHwWeatherView extends View {
+    private static final String TAG = NowHwWeatherView.class.getSimpleName();
     private Context mContext;
 
     private Paint mArcPaint;
@@ -29,22 +31,33 @@ public class NowHwWeatherView extends View {
 
     private float mWidth;
     private float mHeight;
-    private float radius;//半径
+    private float mRadius;
+    //圆弧开始角
+    private int mStartAngle;
+    //圆弧总角度数
+    private int mTotalAngle;
+    //圆弧分隔的份数
+    private int mDivideNumber;
 
-    private int startAngle;//圆弧开始角
-    private int sweepAngle;//圆弧总角度数
-    private int count;//圆弧被分的份数
-
-    private int currentTemp;//当前温度
-    private int maxTemp;
+    //当前温度
+    private int mCurrentTemp;
+    //最低温度
     private int minTemp;
+    //最高温度
+    private int maxTemp;
     private Bitmap bitmap;
-    private int ocAngle;//0度初始角
-    private int fgAngle;//总覆盖的角
-    private int offset;
+    //0℃初始角度
+    private int mZeroAngle;
+    //总覆盖的角
+    private int mCoverAngle;
+
+
+    private int mOffset;
 
     private ValueAnimator mAnimator;
-    private float mCircleAngle;
+
+    private int mPointAngle;
+    private float mPointProgress;
 
     public NowHwWeatherView(Context context) {
         this(context, null);
@@ -65,17 +78,17 @@ public class NowHwWeatherView extends View {
 
         initPaint();
 
-        startAngle = 120;
-        sweepAngle = 300;
-        count = 100;//刻度份数
+        mStartAngle = 120;
+        mTotalAngle = 300;
+        mDivideNumber = 100;//刻度份数
 
-        currentTemp = 26;
+        mCurrentTemp = 26;
         maxTemp = 27;
         minTemp = 20;
-        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.cities_manage_icon);
-        ocAngle = 230;
-        fgAngle = 90;
-        offset = 22;
+        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.weather_icon_0);
+        mZeroAngle = 230;
+        mCoverAngle = 90;
+        mOffset = 22;
     }
 
     private void initPaint() {
@@ -137,27 +150,25 @@ public class NowHwWeatherView extends View {
         super.onDraw(canvas);
         mWidth = getWidth();
         mHeight = getHeight();
-        radius = (mWidth - getPaddingLeft() - getPaddingRight()) / 2;//半径
+        mRadius = (mWidth - getPaddingLeft() - getPaddingRight()) / 2;//半径
         canvas.translate(mWidth / 2, mHeight / 2);
 
-        drawLine(canvas);//画短线
-        drawTextBitmapView(canvas);//画中间的温度和下边的图片
-        drawTempLineView(canvas);//画动态温度
+        //画短线
+        drawLine(canvas);
+        //画中间的温度和下边的图片
+        drawTextBitmapView(canvas);
+        //画动态温度
+        drawTempLineView(canvas);
+        //画圆点
         drawRotateDot(canvas);
     }
 
     private void drawTempLineView(Canvas canvas) {
         mTextPaint.setTextSize(24);
-        //canvas.drawText("0°C",getRealCosX(ocAngle,offset,true),getRealSinY(ocAngle,offset,true),mTextPaint);//固定0度的位置
 
         int startTempAngle = getStartAngle(minTemp, maxTemp);
-       /* if(startTempAngle<=startAngle){//如果开始角小于startAngle，防止过边界
-            startTempAngle=startAngle+10;
-        }else if((startTempAngle+fgAngle)>=(startAngle+sweepAngle)){//如果结束角大于(startAngle+sweepAngle)
-            startTempAngle =startAngle+sweepAngle-20-fgAngle;
-        }*/
-        canvas.drawText(minTemp + "°", getRealCosX(startTempAngle, offset, true), getRealSinY(startTempAngle, offset, true), mTextPaint);
-        canvas.drawText(maxTemp + "°", getRealCosX(startTempAngle + fgAngle, offset, true), getRealSinY(startTempAngle + fgAngle, offset, true), mTextPaint);
+        canvas.drawText(minTemp + "°", getRealCosX(startTempAngle, mOffset, true), getRealSinY(startTempAngle, mOffset, true), mTextPaint);
+        canvas.drawText(maxTemp + "°", getRealCosX(startTempAngle + mCoverAngle, mOffset, true), getRealSinY(startTempAngle + mCoverAngle, mOffset, true), mTextPaint);
     }
 
     /**
@@ -167,11 +178,13 @@ public class NowHwWeatherView extends View {
         canvas.save();
 
         int startTempAngle = getStartAngle(minTemp, maxTemp);
-        mCircleAngle = startTempAngle + (currentTemp - minTemp) * fgAngle / (maxTemp - minTemp);
         mPointPaint.setColor(getRealColor(minTemp, maxTemp));
-        canvas.rotate(mCircleAngle * 3.6f, mWidth / 2, mHeight / 2);
-        canvas.drawCircle(getRealCosX((int) mCircleAngle, 60, false), getRealSinY((int) mCircleAngle, 60, false), 7, mPointPaint);
+        mPointAngle = (int) mPointProgress + startTempAngle;
 
+        float x = getRealCosX(mPointAngle, 60, false);
+        float y = getRealSinY(mPointAngle, 60, false);
+        canvas.drawCircle(x, y, DisplayUtils.dip2px(mContext, 3), mPointPaint);
+        Logger.i(TAG, "Enter drawRotateDot method. (" + x + "," + y + ")");
         canvas.restore();
     }
 
@@ -179,16 +192,16 @@ public class NowHwWeatherView extends View {
      * 启动小圆点旋转动画
      */
     public void startDotAnimator() {
-        mAnimator = ValueAnimator.ofFloat(0, 100);
-        mAnimator.setDuration(1500);
-        mAnimator.setRepeatCount(ValueAnimator.INFINITE);
+        mAnimator = ValueAnimator.ofFloat(0, ((mCurrentTemp - minTemp) * mCoverAngle) / (maxTemp - minTemp));
+        mAnimator.setDuration(5 * 1000);
         mAnimator.setRepeatMode(ValueAnimator.RESTART);
         mAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
         mAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 // 设置小圆点的进度，并通知界面重绘
-                mCircleAngle = (Float) animation.getAnimatedValue();
+                mPointProgress = (Float) animation.getAnimatedValue();
+                Logger.i(TAG, "Enter startDotAnimator method." + mPointProgress);
                 invalidate();
             }
         });
@@ -201,8 +214,8 @@ public class NowHwWeatherView extends View {
      * @param canvas
      */
     private void drawArcView(Canvas canvas) {
-        RectF mRect = new RectF(-radius, -radius, radius, radius);
-        canvas.drawArc(mRect, startAngle, sweepAngle, false, mArcPaint);
+        RectF mRect = new RectF(-mRadius, -mRadius, mRadius, mRadius);
+        canvas.drawArc(mRect, mStartAngle, mTotalAngle, false, mArcPaint);
     }
 
     /**
@@ -212,25 +225,24 @@ public class NowHwWeatherView extends View {
      */
     private void drawLine(Canvas canvas) {
         canvas.save();
-        float angle = (float) sweepAngle / count;//刻度间隔
-        canvas.rotate(-270 + startAngle);//将起始刻度点旋转到正上方
-        for (int i = 0; i <= count; i++) {
-            if (i == 0 || i == count) {
+        float angle = (float) mTotalAngle / mDivideNumber;//刻度间隔
+        canvas.rotate(-270 + mStartAngle);//将起始刻度点旋转到正上方
+        for (int i = 0; i <= mDivideNumber; i++) {
+            if (i == 0 || i == mDivideNumber) {
                 mLinePaint.setStrokeWidth(1);
                 mLinePaint.setColor(Color.WHITE);
-                canvas.drawLine(0, -radius - DisplayUtils.dip2px(mContext, 7), 0, -radius + DisplayUtils.dip2px(mContext, 18), mLinePaint);
+                canvas.drawLine(0, -mRadius - DisplayUtils.dip2px(mContext, 7), 0, -mRadius + DisplayUtils.dip2px(mContext, 18), mLinePaint);
 
-            } else if (i >= getStartLineIndex(minTemp, maxTemp) && i <= getEndLineIndex(minTemp, maxTemp)) {
+            } else if (i > getStartLineIndex(minTemp, maxTemp) && i <= getEndLineIndex(minTemp, maxTemp)) {
                 mLinePaint.setStrokeWidth(3);
                 mLinePaint.setColor(getRealColor(minTemp, maxTemp));
-                canvas.drawLine(0, -radius, 0, -radius + DisplayUtils.dip2px(mContext, 18), mLinePaint);
+                canvas.drawLine(0, -mRadius, 0, -mRadius + DisplayUtils.dip2px(mContext, 18), mLinePaint);
 
             } else {
                 mLinePaint.setStrokeWidth(2);
                 mLinePaint.setColor(Color.WHITE);
-                canvas.drawLine(0, -radius, 0, -radius + DisplayUtils.dip2px(mContext, 18), mLinePaint);
+                canvas.drawLine(0, -mRadius, 0, -mRadius + DisplayUtils.dip2px(mContext, 18), mLinePaint);
             }
-
             canvas.rotate(angle);//逆时针旋转
         }
         canvas.restore();
@@ -238,8 +250,9 @@ public class NowHwWeatherView extends View {
 
     private void drawTextBitmapView(Canvas canvas) {
         mTextPaint.setTextSize(144);
-        canvas.drawText(currentTemp + "°", 0, 0 + getTextPaintOffset(mTextPaint), mTextPaint);
-        canvas.drawBitmap(bitmap, 0 - bitmap.getWidth() / 2, radius - bitmap.getHeight() / 2 - 30, null);
+        canvas.drawText(mCurrentTemp + "°", 0, 0 + getTextPaintOffset(mTextPaint), mTextPaint);
+        canvas.drawBitmap(bitmap, 0 - bitmap.getWidth() / 2, mRadius - bitmap.getHeight() / 2 -
+                50, null);
     }
 
     /**
@@ -255,12 +268,12 @@ public class NowHwWeatherView extends View {
 
     //根据角获得X坐标  R*cos&+getTextPaintOffset(mTextPaint)-off
     private float getCosX(int Angle) {
-        return (float) (radius * Math.cos(Angle * Math.PI / 180)) + getTextPaintOffset(mTextPaint);
+        return (float) (mRadius * Math.cos(Angle * Math.PI / 180)) + getTextPaintOffset(mTextPaint);
     }
 
     //根据角获得y坐标
     private float getSinY(int Angle) {
-        return (float) (radius * Math.sin(Angle * Math.PI / 180)) + getTextPaintOffset(mTextPaint);
+        return (float) (mRadius * Math.sin(Angle * Math.PI / 180)) + getTextPaintOffset(mTextPaint);
     }
 
     //根据项限加一个偏移量
@@ -293,15 +306,15 @@ public class NowHwWeatherView extends View {
             return startFgAngle;
         }
         if (minTemp <= 0) {
-            startFgAngle = ocAngle - (0 - minTemp) * fgAngle / (maxTemp - minTemp);
+            startFgAngle = mZeroAngle - (0 - minTemp) * mCoverAngle / (maxTemp - minTemp);
         } else {
-            startFgAngle = ocAngle + (minTemp - 0) * fgAngle / (maxTemp - minTemp);
+            startFgAngle = mZeroAngle + (minTemp - 0) * mCoverAngle / (maxTemp - minTemp);
         }
         //边界 start
-        if (startFgAngle <= startAngle) {//如果开始角小于startAngle，防止过边界
-            startFgAngle = startAngle + 10;
-        } else if ((startFgAngle + fgAngle) >= (startAngle + sweepAngle)) {//如果结束角大于(startAngle+sweepAngle)
-            startFgAngle = startAngle + sweepAngle - 20 - fgAngle;
+        if (startFgAngle <= mStartAngle) {//如果开始角小于startAngle，防止过边界
+            startFgAngle = mStartAngle + 10;
+        } else if ((startFgAngle + mCoverAngle) >= (mStartAngle + mTotalAngle)) {//如果结束角大于(mStartAngle+mTotalAngle)
+            startFgAngle = mStartAngle + mTotalAngle - 20 - mCoverAngle;
         }
         //边界 end
         return startFgAngle;
@@ -309,11 +322,11 @@ public class NowHwWeatherView extends View {
 
     //根据当天温度范围获取开始短线的索引
     private int getStartLineIndex(int minTemp, int maxTemp) {
-        return (getStartAngle(minTemp, maxTemp) - startAngle) / (sweepAngle / count);
+        return (getStartAngle(minTemp, maxTemp) - mStartAngle) / (mTotalAngle / mDivideNumber);
     }
 
     private int getEndLineIndex(int minTemp, int maxTemp) {
-        return (getStartAngle(minTemp, maxTemp) - startAngle) / (sweepAngle / count) + fgAngle / (sweepAngle / count);
+        return (getStartAngle(minTemp, maxTemp) - mStartAngle) / (mTotalAngle / mDivideNumber) + mCoverAngle / (mTotalAngle / mDivideNumber);
     }
 
     //根据温度返回颜色值

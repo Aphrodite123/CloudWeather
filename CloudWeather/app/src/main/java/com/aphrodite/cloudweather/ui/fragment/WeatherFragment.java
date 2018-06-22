@@ -2,7 +2,7 @@ package com.aphrodite.cloudweather.ui.fragment;
 
 import com.aphrodite.cloudweather.R;
 import com.aphrodite.cloudweather.ui.base.BaseFragment;
-import com.aphrodite.cloudweather.ui.widget.NowHwWeatherView;
+import com.aphrodite.cloudweather.ui.widget.CircleProgressBar;
 
 import butterknife.BindView;
 
@@ -11,7 +11,7 @@ import butterknife.BindView;
  */
 public class WeatherFragment extends BaseFragment {
     @BindView(R.id.circle_progress_bar)
-    NowHwWeatherView mCircleProgressBar;
+    CircleProgressBar mCircleProgressBar;
 
     @Override
     protected int getViewId() {
@@ -21,6 +21,8 @@ public class WeatherFragment extends BaseFragment {
     @Override
     protected void initView() {
         mCircleProgressBar.startDotAnimator();
+        mCircleProgressBar.setMinTemp(20);
+        mCircleProgressBar.setMaxTemp(36);
     }
 
     @Override

@@ -82,4 +82,7 @@ dependencies {
      * RecyclerView
      */
     implementation 'com.android.support:recyclerview-v7:27.1.1'
+
+    // 新增加的
+    implementation project(':library')
 }
