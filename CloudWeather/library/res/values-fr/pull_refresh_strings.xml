@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="pull_to_refresh_pull_label">Tirez pour rafraîchir…</string>
-  <string name="pull_to_refresh_release_label">Relâcher pour rafraîchir…</string>
-  <string name="pull_to_refresh_refreshing_label">Chargement…</string>
+  <!--法语-->
+  <string name="pull_to_refresh_pull_label">Dérouler rafraîchir</string>
+  <string name="pull_to_refresh_release_label">Laisse aller rafraîchir</string>
+  <string name="pull_to_refresh_refreshing_label">Rafraîchissant</string>
 </resources>

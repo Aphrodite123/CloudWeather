@@ -7,4 +7,14 @@
     <dimen name="header_footer_left_right_padding">24dp</dimen>
     <dimen name="header_footer_top_bottom_padding">12dp</dimen>
 
+    <dimen name="dp_1">1dp</dimen>
+    <dimen name="dp_2">2dp</dimen>
+    <dimen name="dp_5">5dp</dimen>
+    <dimen name="dp_10">10dp</dimen>
+    <dimen name="dp_12">12dp</dimen>
+    <dimen name="dp_16">16dp</dimen>
+
+    <!--字体大小-->
+    <dimen name="sp_10">10sp</dimen>
+
 </resources>

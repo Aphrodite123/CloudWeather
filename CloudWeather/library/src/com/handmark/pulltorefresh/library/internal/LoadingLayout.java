@@ -22,8 +22,6 @@ import android.content.res.TypedArray;
 import android.graphics.Typeface;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.Handler;
-import android.os.Message;
 import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -35,12 +33,14 @@ import android.view.animation.LinearInterpolator;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.handmark.pulltorefresh.library.ILoadingLayout;
 import com.handmark.pulltorefresh.library.PullToRefreshBase.Mode;
 import com.handmark.pulltorefresh.library.PullToRefreshBase.Orientation;
 import com.handmark.pulltorefresh.library.R;
+import com.handmark.pulltorefresh.library.widget.CircleLoadingProgressBar;
 
 @SuppressLint("ViewConstructor")
 public abstract class LoadingLayout extends FrameLayout implements ILoadingLayout {
@@ -49,10 +49,10 @@ public abstract class LoadingLayout extends FrameLayout implements ILoadingLayou
 
     static final Interpolator ANIMATION_INTERPOLATOR = new LinearInterpolator();
 
-    private FrameLayout mInnerLayout;
+    private RelativeLayout mInnerLayout;
 
     protected final ImageView mHeaderImage;
-    protected final ProgressBar mHeaderProgress;
+    protected final CircleLoadingProgressBar mHeaderProgress;
 
     private boolean mUseIntrinsicAnimation;
 
@@ -63,7 +63,7 @@ public abstract class LoadingLayout extends FrameLayout implements ILoadingLayou
     protected final Orientation mScrollDirection;
 
     private CharSequence mPullLabel;
-    private int[] mRefreshingLabel;
+    private CharSequence mRefreshingLabel;
     private CharSequence mReleaseLabel;
 
     private final int TIMER_PERIOD = 300;
@@ -84,9 +84,9 @@ public abstract class LoadingLayout extends FrameLayout implements ILoadingLayou
                 break;
         }
 
-        mInnerLayout = (FrameLayout) findViewById(R.id.fl_inner);
+        mInnerLayout = (RelativeLayout) findViewById(R.id.fl_inner);
         mHeaderText = (TextView) mInnerLayout.findViewById(R.id.pull_to_refresh_text);
-        mHeaderProgress = (ProgressBar) mInnerLayout.findViewById(R.id.pull_to_refresh_progress);
+        mHeaderProgress = (CircleLoadingProgressBar) mInnerLayout.findViewById(R.id.pull_to_refresh_progress);
         mSubHeaderText = (TextView) mInnerLayout.findViewById(R.id.pull_to_refresh_sub_text);
         mHeaderImage = (ImageView) mInnerLayout.findViewById(R.id.pull_to_refresh_image);
 
@@ -100,10 +100,7 @@ public abstract class LoadingLayout extends FrameLayout implements ILoadingLayou
 
                 // Load in labels
                 mPullLabel = context.getString(R.string.pull_to_refresh_from_bottom_pull_label);
-                mRefreshingLabel = new int[]{R.string.pull_to_refresh_refreshing_label1,
-                        R.string.pull_to_refresh_refreshing_label2,
-                        R.string.pull_to_refresh_refreshing_label3,
-                        R.string.pull_to_refresh_refreshing_label4};
+                mRefreshingLabel = context.getString(R.string.pull_to_refresh_refreshing_label);
                 mReleaseLabel = context.getString(R.string.pull_to_refresh_from_bottom_release_label);
                 break;
 
@@ -113,10 +110,7 @@ public abstract class LoadingLayout extends FrameLayout implements ILoadingLayou
 
                 // Load in labels
                 mPullLabel = context.getString(R.string.pull_to_refresh_pull_label);
-                mRefreshingLabel = new int[]{R.string.pull_to_refresh_refreshing_label1,
-                        R.string.pull_to_refresh_refreshing_label2,
-                        R.string.pull_to_refresh_refreshing_label3,
-                        R.string.pull_to_refresh_refreshing_label4};
+                mRefreshingLabel = context.getString(R.string.pull_to_refresh_refreshing_label);
                 mReleaseLabel = context.getString(R.string.pull_to_refresh_release_label);
                 break;
         }
@@ -247,7 +241,7 @@ public abstract class LoadingLayout extends FrameLayout implements ILoadingLayou
 
     public final void refreshing() {
         if (null != mHeaderText) {
-            mHeaderText.setText(mRefreshingLabel[0]);
+            mHeaderText.setText(mRefreshingLabel);
             isRunning = true;
         }
 
@@ -258,9 +252,7 @@ public abstract class LoadingLayout extends FrameLayout implements ILoadingLayou
             refreshingImpl();
         }
 
-        if (null != mSubHeaderText) {
-            mSubHeaderText.setVisibility(View.GONE);
-        }
+        mHeaderProgress.startDotAnimator();
     }
 
     public final void releaseToRefresh() {
@@ -399,28 +391,6 @@ public abstract class LoadingLayout extends FrameLayout implements ILoadingLayou
         if (null != mSubHeaderText) {
             mSubHeaderText.setTextColor(color);
         }
-    }
-
-    private final Handler textHandler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            if (!isRunning)
-                return;
-
-            int index = msg.arg1;
-            mHeaderText.setText(mRefreshingLabel[index]);
-
-            index++;
-            index = index % mRefreshingLabel.length;
-            sendTextMessage(index);
-        }
-    };
-
-    private void sendTextMessage(int arg) {
-        Message message = textHandler.obtainMessage();
-        message.what = 0;
-        message.arg1 = arg;
-        textHandler.sendMessageDelayed(message, TIMER_PERIOD);
     }
 
 }

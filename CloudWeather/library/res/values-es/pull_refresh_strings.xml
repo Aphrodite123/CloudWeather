@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="pull_to_refresh_pull_label">Tirar para actualizar…</string>
-  <string name="pull_to_refresh_release_label">Soltar para actualizar…</string>
-  <string name="pull_to_refresh_refreshing_label">Cargando…</string>
+  <!--西班牙语-->
+  <string name="pull_to_refresh_pull_label">Deshacer la actualización</string>
+  <string name="pull_to_refresh_release_label">Deje ir actualizar</string>
+  <string name="pull_to_refresh_refreshing_label">Refrescante</string>
 </resources>

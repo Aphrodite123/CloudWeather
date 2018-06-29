@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="pull_to_refresh_pull_label">Trage pentru a reîmprospăta…</string>
-  <string name="pull_to_refresh_release_label">Eliberează pentru a reîmprospăta…</string>
-  <string name="pull_to_refresh_refreshing_label">Încărcare…</string>
+  <!--罗马尼亚语-->
+  <string name="pull_to_refresh_pull_label">Trageți în jos reîmprospătarea</string>
+  <string name="pull_to_refresh_release_label">Lăsați să se reîmprospăteze</string>
+  <string name="pull_to_refresh_refreshing_label">răcoritor</string>
 </resources>

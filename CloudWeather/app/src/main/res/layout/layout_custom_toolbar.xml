@@ -58,7 +58,7 @@
             android:layout_marginTop="@dimen/dp_5"
             android:text="14:51 发布"
             android:textColor="@color/color_65e6e6e6"
-            android:textSize="@dimen/sp_8" />
+            android:textSize="@dimen/sp_10" />
 
     </LinearLayout>
 

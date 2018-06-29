@@ -80,7 +80,7 @@ public class NowHwWeatherView extends View {
 
         mStartAngle = 120;
         mTotalAngle = 300;
-        mDivideNumber = 100;//刻度份数
+        mDivideNumber = 80;//刻度份数
 
         mCurrentTemp = 26;
         maxTemp = 27;

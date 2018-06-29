@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="pull_to_refresh_pull_label">Sleep om te vernieuwen…</string>
-  <string name="pull_to_refresh_release_label">Loslaten om te vernieuwen…</string>
-  <string name="pull_to_refresh_refreshing_label">Laden…</string>
+  <!--荷兰语-->
+  <string name="pull_to_refresh_pull_label">Trek verversing naar beneden</string>
+  <string name="pull_to_refresh_release_label">Laat het vernieuwen</string>
+  <string name="pull_to_refresh_refreshing_label">verfrissend</string>
 </resources>
