@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pull_to_refresh_pull_label">Потяните вниз обновление</string>
+    <string name="pull_to_refresh_refreshing_label">освежение</string>
+    <string name="pull_to_refresh_release_label">Отпустите обновление</string>
+</resources>
